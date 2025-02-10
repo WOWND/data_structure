@@ -1,30 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_SIZE 6
-//원형큐 v1 count 변수를 사용하지 않는 방식
-// (한 칸을 비우고 사용하는 방식)
+#define MAX_SIZE 5
+//원형큐 v2 count 변수를 사용
+// (모든 칸을 사용하는 방식)
 
 typedef int element; //큐에 담을 타입
 typedef struct {
     element data[MAX_SIZE];
     int rear;  //뒤에서 넣기
     int front; //앞에서 빼기
+    int count;
 }Queue;
 
 Queue* init() { //큐 초기화
     Queue *queue = (Queue *) malloc(sizeof(Queue));
     queue->rear = -1;
     queue->front = -1;
+    queue->count = 0;
     return queue;
 }
 
 int isEmpty(Queue *q) { //큐 공백 체크
-    return q->rear == q-> front;
+    return q->count == 0;
 }
 
 int isFull(Queue *q) { //큐 포화 체크
-    return (q->rear + 1) % MAX_SIZE == q->front;
+    return q->count == MAX_SIZE;
 }
 
 void enqueue(Queue *q, element newValue) { //삽입
@@ -33,6 +35,7 @@ void enqueue(Queue *q, element newValue) { //삽입
         exit(1);
     }
     q->rear = (q->rear + 1) % MAX_SIZE;
+    q->count++;
     q->data[q->rear] = newValue;
 }
 
@@ -42,6 +45,7 @@ element dequeue(Queue *q) { //추출
         exit(1);
     }
     q->front = (q->front + 1) % MAX_SIZE;
+    q->count--;
     return q->data[q->front];
 }
 
@@ -54,7 +58,7 @@ element peek(Queue *q) { //추출
 }
 
 int size(Queue *q) {
-    return (MAX_SIZE + q->rear - q->front) % MAX_SIZE;
+    return q->count;
 }
 
 int main(){
