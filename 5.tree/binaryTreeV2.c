@@ -2,9 +2,9 @@
 #include <stdlib.h>
 
 //노드로 구현한 이진트리
-typedef struct TreeNode {
+typedef struct Tree {
     int value;
-    struct TreeNode *right, *left;
+    struct Tree *right, *left;
 }Tree;
 
 
