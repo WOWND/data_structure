@@ -1,114 +1,85 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//이진탐색트리
+typedef int element; //노드에 담을 타입
+typedef struct Node { //노드
+    element value;
+    struct Node *left, *right;
+}Node;
 
-typedef struct BST {
-    int value;
-    struct BST *left, *right;
-}BST;
-
-BST* newNode(int value) {
-    BST *node = (BST *) malloc(sizeof(BST));
+Node *create_node(element value) { //노드 생성
+    Node* node = (Node*)malloc(sizeof(Node));
     node->value = value;
     node->left = NULL;
     node->right = NULL;
     return node;
 }
 
-BST* search(BST* node, int value) {
-    if (node == NULL) return NULL;
-    if (node->value == value) { //발견
-        return node;
-    }else if (node->value > value) { //왼쪽 탐색
+Node *search(Node *node, element value) { //노드 탐색
+    if (node == NULL) return NULL; //값을 찾을 수 없음
+
+    if (node->value > value) //왼쪽 탐색
         return search(node->left,value);
-    }else { //오른쪽 탐색
-        return search(node->right,value);
-    }
+    if (node-> value < value) //오른쪽 탐색
+        return search(node->right, value);
+    if (node->value == value) //값을 찾음
+        return node;
 }
 
-BST *insert(BST *node, int value) {
-    if (node == NULL) { //비었으면 넣어주기
-        return newNode(value);
-    }
-
-    if (node->value > value) {
-        //왼쪽으로 내려가기
-        node->left = insert(node->left,value);
-    }else if (node->value < value) {
-        //오른쪽으로 내려가기
-        node->right = insert(node->right,value);
-    }
-
-    return node;
-}
-
-BST* search_min(BST* node) {
-    if (node->left == NULL) return node;
+Node *search_min(Node *node) { //최솟값 노드 탐색
+    if (node->left == NULL) return node; //왼쪽이 비었으면 최솟값
     return search_min(node->left);
 }
 
-BST* delete(BST* node,int value){
-    if (node == NULL) return NULL;
+Node *insert(Node *node, element value) { //노드 삽입
+    if (node == NULL) return create_node(value); //빈 노드 발견하면 삽입하기
 
-    if (node->value > value) { //왼쪽 탐색
-        node-> left = delete(node->left,value);
-    } else if ( node->value < value) { //오른쪽 탐색
-        node -> right = delete(node->right, value);
-    } else { //발견
-        //1. 말단 노드 (자식이 없는 경우)
-        //2. 자식이 하나인 경우
-        if (node->left == NULL) {
-            BST* temp = node->right;
-            free(node);
-            return temp;
-        }
-        if (node->right == NULL) {
-            BST* temp = node->left;
-            free(node);
-            return temp;
-        }
+    if (node->value > value) //왼쪽 탐색
+        node->left = insert(node->left,value);
+    else if (node-> value < value) //오른쪽 탐색
+        node->right = insert(node->right, value);
+    return node;
+}
 
-        //3. 자식이 둘인 경우
-        //후계자를 찾아서 나와 바꿈 (후계자: 오른쪽 노드에서 가장 작은 값)
-        int temp = search_min(node->right)->value;
-        node->value = temp;
-        delete(node->right,temp);
+Node *delete(Node *node, element value){ //노드 삭제
+    if (node == NULL) return NULL; //삭제할 노드를 찾을 수 없음
+
+    if (node->value > value) //왼쪽 탐색
+        node->left = delete(node->left,value);
+    else if (node->value < value) //오른쪽 탐색
+        node->right = delete(node->right, value);
+    else { //삭제할 노드 발견
+        if (node->left == NULL || node->right == NULL) { //삭제할 노드의 자식이 하나 or 없을 때
+            Node *temp = node;
+            node = (node->left == NULL ? node->right : node-> left);
+            free(temp);
+        }else { //자식이 둘일 때
+            Node* successor = search_min(node->right); //후계자는 오른쪽 서브트리에서 가장 작은 값
+            node->value = successor->value; //후계자 값 복사
+            node->right = delete(node->right,successor->value); //후계자 삭제
+        }
     }
     return node;
 }
 
-void inorder(BST* node) { //중위순회 L->V->R
-    if (node == NULL) {
-        return;
-    }
+void inorder(Node *node) { //중위순회 L->V->R (오름차순으로 순회한다.)
+    if (node == NULL) return;
     inorder(node->left);
     printf("[%d] ", node->value);
     inorder(node->right);
 }
 
-int main(){
-    BST* root = NULL;
+int main() {
+    Node* root = create_node(10);
 
-    // 삽입
-    root = insert(root, 50);
-    root = insert(root, 30);
-    root = insert(root, 20);
-    root = insert(root, 40);
-    root = insert(root, 70);
-    root = insert(root, 60);
-    root = insert(root, 80);
-
-    printf("중위 순회 (삽입 후): ");
-    inorder(root); // 삽입 후 중위순회
-    printf("\n");
-
-    // 삭제
-    root = delete(root, 20); // 20 삭제
-    root = delete(root, 30); // 30 삭제
-    root = delete(root, 50); // 50 삭제
-
-    printf("중위 순회 (삭제 후): ");
-    inorder(root); // 삭제 후 중위순회
-    printf("\n");
+    root = insert(root,5);
+    root = insert(root,15);
+    root = insert(root,20);
+    root = insert(root,0);
+    root = insert(root,40);
+    root = insert(root,17);
+    root = insert(root,19);
+    root = insert(root,13);
+    delete(root,15);
+    inorder(root);
 }
